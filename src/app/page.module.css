@@ -113,16 +113,19 @@
 
 .tableWrapper {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   margin-bottom: 2rem;
   border-radius: 12px;
   background: rgba(0, 0, 0, 0.25);
   border: 1px solid rgba(255, 255, 255, 0.05);
+  width: 100%;
 }
 
 .table {
   width: 100%;
   border-collapse: collapse;
   text-align: left;
+  min-width: 650px;
 }
 
 .table th, .table td {
@@ -191,10 +194,29 @@
 }
 
 @media (max-width: 768px) {
+  .container {
+    padding: 2rem 1rem;
+  }
   .grid {
     grid-template-columns: 1fr;
   }
   .header h1 {
+    font-size: 2.25rem;
+  }
+  .summaryCard {
+    padding: 1.5rem;
+  }
+  .totalIncome {
     font-size: 2.5rem;
+  }
+  .summaryHeader h2 {
+    font-size: 1rem;
+  }
+  .exchangeRate {
+    font-size: 0.75rem;
+  }
+  .table th, .table td {
+    padding: 1rem 0.6rem;
+    font-size: 0.85rem;
   }
 }
