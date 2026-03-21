@@ -11,6 +11,8 @@ export default async function Home() {
   const exchangeRate = await getUsdToKrwRate();
   
   let totalUsdWeeklyIncome = 0;
+  let totalNetUsdWeeklyIncome = 0;
+
   const summaryDetails = etfData.map(etf => {
     // Array comes reversed from lib, so 0 is the newest
     const latestDist = etf.distributions && etf.distributions.length > 0 ? etf.distributions[0] : null;
@@ -25,8 +27,11 @@ export default async function Home() {
     }
     
     const totalUsd = qty * amount;
-    const totalKrw = totalUsd * exchangeRate;
+    const netUsd = totalUsd * 0.85; // 15% dividend tax
+    const netKrw = netUsd * exchangeRate;
+
     totalUsdWeeklyIncome += totalUsd;
+    totalNetUsdWeeklyIncome += netUsd;
     
     return {
       symbol: etf.symbol,
@@ -34,11 +39,12 @@ export default async function Home() {
       quantity: qty,
       amountPerShare: amount,
       totalUsd,
-      totalKrw
+      netUsd,
+      netKrw
     };
   });
   
-  const totalKrwWeeklyIncome = totalUsdWeeklyIncome * exchangeRate;
+  const totalNetKrwWeeklyIncome = totalNetUsdWeeklyIncome * exchangeRate;
 
   return (
     <main className={styles.container}>
@@ -50,12 +56,12 @@ export default async function Home() {
       <section className={styles.summarySection}>
         <div className={styles.summaryCard}>
           <div className={styles.summaryHeader}>
-            <h2>Expected Weekly Income (KRW)</h2>
+            <h2>Expected Weekly Income (Net of 15% Tax)</h2>
             <div className={styles.totalIncome}>
-              ₩{Math.round(totalKrwWeeklyIncome).toLocaleString()}
+              ₩{Math.round(totalNetKrwWeeklyIncome).toLocaleString()}
             </div>
             <div className={styles.exchangeRate}>
-              Exchange Rate applied: 1 USD = ₩{exchangeRate.toLocaleString(undefined, { maximumFractionDigits: 1 })}
+              Net USD: ${totalNetUsdWeeklyIncome.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} &nbsp;|&nbsp; Rate: 1 USD = ₩{exchangeRate.toLocaleString(undefined, { maximumFractionDigits: 1 })}
             </div>
           </div>
           
@@ -66,8 +72,10 @@ export default async function Home() {
                   <th>Asset</th>
                   <th>Recent Date</th>
                   <th>Quantity</th>
-                  <th>Dividend / Share</th>
-                  <th>Expected (KRW)</th>
+                  <th>Div / Share</th>
+                  <th>Total (USD)</th>
+                  <th>Net (USD, -15%)</th>
+                  <th>Net (KRW)</th>
                 </tr>
               </thead>
               <tbody>
@@ -77,7 +85,9 @@ export default async function Home() {
                     <td>{item.date}</td>
                     <td>{item.quantity.toLocaleString()}</td>
                     <td>${item.amountPerShare.toFixed(4)}</td>
-                    <td className={styles.amount}>₩{Math.round(item.totalKrw).toLocaleString()}</td>
+                    <td>${item.totalUsd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                    <td style={{ color: "var(--text-secondary)" }}>${item.netUsd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                    <td className={styles.amount}>₩{Math.round(item.netKrw).toLocaleString()}</td>
                   </tr>
                 ))}
               </tbody>
