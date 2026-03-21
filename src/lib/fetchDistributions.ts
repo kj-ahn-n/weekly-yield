@@ -8,26 +8,30 @@ export interface Distribution {
   amountPaid: string;
 }
 
-export interface EtfData {
+export interface EtfSource {
   symbol: string;
   name: string;
   url: string;
+  tokenUrl: string;
+  dataUrl: string;
+}
+
+export interface EtfData extends EtfSource {
   distributions: Distribution[];
 }
 
-export async function fetchDistributions(symbol: string): Promise<Distribution[]> {
+export async function fetchDistributions(source: EtfSource): Promise<Distribution[]> {
   try {
     // 1. Get auth token and session cookie from the remote server
-    const tokenUrl = "https://www.roundhillinvestments.com/assets/php/server.php";
-    const tokenRes = await fetch(tokenUrl, {
+    const tokenRes = await fetch(source.tokenUrl, {
       headers: {
         "User-Agent": "Mozilla/5.0",
-        "Referer": `https://www.roundhillinvestments.com/etf/${symbol.toLowerCase()}/`
+        "Referer": source.url
       },
       next: { revalidate: 3600 }
     });
     
-    if (!tokenRes.ok) throw new Error("Failed to get token for " + symbol);
+    if (!tokenRes.ok) throw new Error("Failed to get token for " + source.symbol);
     
     const token = await tokenRes.text();
     const originalCookies = tokenRes.headers.get("set-cookie") || tokenRes.headers.get("Set-Cookie");
@@ -40,29 +44,31 @@ export async function fetchDistributions(symbol: string): Promise<Distribution[]
     }
 
     // 2. Fetch the true distribution JSON from the internal API
-    const dataUrl = "https://www.roundhillinvestments.com/assets/php/distribution-call.php";
     const params = new URLSearchParams();
-    params.append('upperetf', symbol.toUpperCase());
-    params.append('loweretf', symbol.toLowerCase());
+    params.append('upperetf', source.symbol.toUpperCase());
+    params.append('loweretf', source.symbol.toLowerCase());
     params.append('token', token.trim());
     params.append('is_ajax', '1');
 
-    const res = await fetch(dataUrl, {
+    // Extract base origin for headers dynamically from the source string
+    const originUrl = new URL(source.dataUrl).origin;
+
+    const res = await fetch(source.dataUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
         "Cookie": cookieStr,
-        "Referer": `https://www.roundhillinvestments.com/etf/${symbol.toLowerCase()}/`,
+        "Referer": source.url,
         "User-Agent": "Mozilla/5.0",
         "X-Requested-With": "XMLHttpRequest",
-        "Origin": "https://www.roundhillinvestments.com",
+        "Origin": originUrl,
         "Accept": "*/*"
       },
       body: params,
       next: { revalidate: 3600 }
     });
 
-    if (!res.ok) throw new Error("Failed to get distributions for " + symbol);
+    if (!res.ok) throw new Error("Failed to get distributions for " + source.symbol);
 
     const txt = await res.text();
     if (!txt.trim()) return [];
@@ -84,15 +90,16 @@ export async function fetchDistributions(symbol: string): Promise<Distribution[]
 
     return distributions;
   } catch (error) {
-    console.error(`Error fetching distributions for ${symbol}:`, error);
+    console.error(`Error fetching distributions for ${source.symbol}:`, error);
     return [];
   }
 }
 
 export async function getAllEtfData(): Promise<EtfData[]> {
   const results = await Promise.all(
-    etfSources.map(async (source) => {
-      const distributions = await fetchDistributions(source.symbol);
+    etfSources.map(async (src) => {
+      const source = src as EtfSource;
+      const distributions = await fetchDistributions(source);
       return {
         ...source,
         distributions

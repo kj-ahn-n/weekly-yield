@@ -2,11 +2,15 @@
   {
     "symbol": "YBTC",
     "name": "Roundhill Bitcoin Covered Call Strategy ETF",
-    "url": "https://www.roundhillinvestments.com/etf/ybtc/"
+    "url": "https://www.roundhillinvestments.com/etf/ybtc/",
+    "tokenUrl": "https://www.roundhillinvestments.com/assets/php/server.php",
+    "dataUrl": "https://www.roundhillinvestments.com/assets/php/distribution-call.php"
   },
   {
     "symbol": "YETH",
     "name": "Roundhill Ether Covered Call Strategy ETF",
-    "url": "https://www.roundhillinvestments.com/etf/yeth/"
+    "url": "https://www.roundhillinvestments.com/etf/yeth/",
+    "tokenUrl": "https://www.roundhillinvestments.com/assets/php/server.php",
+    "dataUrl": "https://www.roundhillinvestments.com/assets/php/distribution-call.php"
   }
 ]
