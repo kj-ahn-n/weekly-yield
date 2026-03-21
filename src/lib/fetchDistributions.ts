@@ -78,15 +78,17 @@ export async function fetchDistributions(source: EtfSource): Promise<Distributio
     // Reverse array to put the most recent distributions at the top
     const reversed = rawArray.slice().reverse();
 
-    const distributions: Distribution[] = reversed.map(row => {
-      return {
-        declarationDate: row[0] || "",
-        exDate: row[1] || "",
-        recordDate: row[2] || "",
-        payDate: row[3] || "",
-        amountPaid: row[4] && !row[4].startsWith('$') ? "$" + row[4] : (row[4] || "")
-      };
-    });
+    const distributions: Distribution[] = reversed
+      .filter(row => row[4] && row[4].trim() !== "")
+      .map(row => {
+        return {
+          declarationDate: row[0] || "",
+          exDate: row[1] || "",
+          recordDate: row[2] || "",
+          payDate: row[3] || "",
+          amountPaid: row[4] && !row[4].startsWith('$') ? "$" + row[4] : (row[4] || "")
+        };
+      });
 
     return distributions;
   } catch (error) {
