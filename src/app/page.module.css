@@ -26,6 +26,48 @@
   color: var(--text-secondary);
 }
 
+.summarySection {
+  margin-bottom: 4rem;
+  animation: fadeInDown 0.8s ease-out forwards;
+}
+
+.summaryCard {
+  background: linear-gradient(145deg, rgba(20, 20, 30, 0.6), rgba(10, 10, 15, 0.8));
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--accent);
+  border-radius: 24px;
+  padding: 3rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(79, 70, 229, 0.1);
+}
+
+.summaryHeader {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.summaryHeader h2 {
+  font-size: 1.25rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 1rem;
+}
+
+.totalIncome {
+  font-size: 4.5rem;
+  font-weight: 800;
+  color: var(--primary);
+  text-shadow: 0 0 30px rgba(79, 70, 229, 0.5);
+  margin-bottom: 0.5rem;
+  line-height: 1;
+}
+
+.exchangeRate {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));

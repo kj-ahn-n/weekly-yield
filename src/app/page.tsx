@@ -1,4 +1,6 @@
 import { getAllEtfData } from '@/lib/fetchDistributions';
+import { getUsdToKrwRate } from '@/lib/fetchExchangeRate';
+import holdings from '@/data/holdings.json';
 import styles from './page.module.css';
 
 // Revalidate page data every hour
@@ -6,9 +8,37 @@ export const revalidate = 3600;
 
 export default async function Home() {
   const etfData = await getAllEtfData();
+  const exchangeRate = await getUsdToKrwRate();
   
-  // Debug output during build/server run
-  console.log("Scraped ETF Data:", JSON.stringify(etfData, null, 2));
+  let totalUsdWeeklyIncome = 0;
+  const summaryDetails = etfData.map(etf => {
+    // Array comes reversed from lib, so 0 is the newest
+    const latestDist = etf.distributions && etf.distributions.length > 0 ? etf.distributions[0] : null;
+    const qty = (holdings as Record<string, number>)[etf.symbol] || 0;
+    
+    let amount = 0;
+    let latestDate = "N/A";
+    
+    if (latestDist) {
+      amount = parseFloat(latestDist.amountPaid.replace('$', '')) || 0;
+      latestDate = latestDist.payDate || latestDist.declarationDate;
+    }
+    
+    const totalUsd = qty * amount;
+    const totalKrw = totalUsd * exchangeRate;
+    totalUsdWeeklyIncome += totalUsd;
+    
+    return {
+      symbol: etf.symbol,
+      date: latestDate,
+      quantity: qty,
+      amountPerShare: amount,
+      totalUsd,
+      totalKrw
+    };
+  });
+  
+  const totalKrwWeeklyIncome = totalUsdWeeklyIncome * exchangeRate;
 
   return (
     <main className={styles.container}>
@@ -16,6 +46,45 @@ export default async function Home() {
         <h1>Weekly Yield Tracker</h1>
         <p>Real-time dividend distributions for your favorite ETFs</p>
       </header>
+
+      <section className={styles.summarySection}>
+        <div className={styles.summaryCard}>
+          <div className={styles.summaryHeader}>
+            <h2>Expected Weekly Income (KRW)</h2>
+            <div className={styles.totalIncome}>
+              ₩{Math.round(totalKrwWeeklyIncome).toLocaleString()}
+            </div>
+            <div className={styles.exchangeRate}>
+              Exchange Rate applied: 1 USD = ₩{exchangeRate.toLocaleString(undefined, { maximumFractionDigits: 1 })}
+            </div>
+          </div>
+          
+          <div className={styles.tableWrapper}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>Asset</th>
+                  <th>Recent Date</th>
+                  <th>Quantity</th>
+                  <th>Dividend / Share</th>
+                  <th>Expected (KRW)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {summaryDetails.map(item => (
+                  <tr key={item.symbol}>
+                    <td><strong>{item.symbol}</strong></td>
+                    <td>{item.date}</td>
+                    <td>{item.quantity.toLocaleString()}</td>
+                    <td>${item.amountPerShare.toFixed(4)}</td>
+                    <td className={styles.amount}>₩{Math.round(item.totalKrw).toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
 
       <section className={styles.grid}>
         {etfData.map((etf) => (
