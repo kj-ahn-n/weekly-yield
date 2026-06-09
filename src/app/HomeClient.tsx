@@ -3,11 +3,12 @@
 import { useState, useEffect } from 'react';
 import defaultHoldings from '@/data/holdings.json';
 import styles from './page.module.css';
+import { Distribution } from '@/lib/fetchDistributions';
 
 type EtfData = {
   symbol: string;
   name: string;
-  distributions: any[];
+  distributions: Distribution[];
   url: string;
 };
 
@@ -21,6 +22,7 @@ export default function HomeClient({ etfData, exchangeRate }: HomeClientProps) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
     const saved = localStorage.getItem('etf_holdings');
     if (saved) {
@@ -43,9 +45,6 @@ export default function HomeClient({ etfData, exchangeRate }: HomeClientProps) {
     localStorage.setItem('etf_holdings', JSON.stringify(newHoldings));
   };
 
-  let totalUsdWeeklyIncome = 0;
-  let totalNetUsdWeeklyIncome = 0;
-
   const summaryDetails = etfData.map(etf => {
     const latestDist = etf.distributions && etf.distributions.length > 0 ? etf.distributions[0] : null;
     const rawQty = holdings[etf.symbol];
@@ -62,9 +61,6 @@ export default function HomeClient({ etfData, exchangeRate }: HomeClientProps) {
     const totalUsd = qty * amount;
     const netUsd = totalUsd * 0.85; // 15% dividend tax
     const netKrw = netUsd * exchangeRate;
-
-    totalUsdWeeklyIncome += totalUsd;
-    totalNetUsdWeeklyIncome += netUsd;
     
     return {
       symbol: etf.symbol,
@@ -78,6 +74,7 @@ export default function HomeClient({ etfData, exchangeRate }: HomeClientProps) {
     };
   });
 
+  const totalNetUsdWeeklyIncome = summaryDetails.reduce((sum, item) => sum + item.netUsd, 0);
   const totalNetKrwWeeklyIncome = totalNetUsdWeeklyIncome * exchangeRate;
 
   return (

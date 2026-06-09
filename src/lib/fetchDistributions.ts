@@ -46,7 +46,7 @@ export async function fetchDistributions(source: EtfSource): Promise<Distributio
     // 2. Fetch the true distribution JSON from the internal API
     const params = new URLSearchParams();
     params.append('upperetf', source.symbol.toUpperCase());
-    params.append('loweretf', source.symbol.toLowerCase());
+    params.append('loweretf', source.symbol.toLowerCase() + '/');
     params.append('token', token.trim());
     params.append('is_ajax', '1');
 
@@ -73,20 +73,25 @@ export async function fetchDistributions(source: EtfSource): Promise<Distributio
     const txt = await res.text();
     if (!txt.trim()) return [];
     
-    const rawArray: string[][] = JSON.parse(txt);
+    const rawArray: (string | number | null)[][] = JSON.parse(txt);
     
     // Reverse array to put the most recent distributions at the top
     const reversed = rawArray.slice().reverse();
 
     const distributions: Distribution[] = reversed
-      .filter(row => row[4] && row[4].trim() !== "")
+      .filter(row => {
+        const val = row[4];
+        if (val === undefined || val === null) return false;
+        return String(val).trim() !== "";
+      })
       .map(row => {
+        const val = String(row[4] || "");
         return {
-          declarationDate: row[0] || "",
-          exDate: row[1] || "",
-          recordDate: row[2] || "",
-          payDate: row[3] || "",
-          amountPaid: row[4] && !row[4].startsWith('$') ? "$" + row[4] : (row[4] || "")
+          declarationDate: String(row[0] || ""),
+          exDate: String(row[1] || ""),
+          recordDate: String(row[2] || ""),
+          payDate: String(row[3] || ""),
+          amountPaid: val.startsWith('$') ? val : "$" + val
         };
       });
 
