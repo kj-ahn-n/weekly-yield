@@ -12,5 +12,19 @@
     "url": "https://www.roundhillinvestments.com/etf/yeth/",
     "tokenUrl": "https://www.roundhillinvestments.com/assets/php/server.php",
     "dataUrl": "https://www.roundhillinvestments.com/assets/php/distribution-call.php"
+  },
+  {
+    "symbol": "QDTE",
+    "name": "Roundhill Nasdaq-100 0DTE Covered Call Strategy ETF",
+    "url": "https://www.roundhillinvestments.com/etf/qdte/",
+    "tokenUrl": "https://www.roundhillinvestments.com/assets/php/server.php",
+    "dataUrl": "https://www.roundhillinvestments.com/assets/php/distribution-call.php"
+  },
+  {
+    "symbol": "GLDW",
+    "name": "Roundhill Gold WeeklyPay ETF",
+    "url": "https://www.roundhillinvestments.com/etf/gldw/",
+    "tokenUrl": "https://www.roundhillinvestments.com/assets/php/server.php",
+    "dataUrl": "https://www.roundhillinvestments.com/assets/php/distribution-call.php"
   }
 ]
