@@ -27,7 +27,7 @@ export default function HomeClient({ etfData, exchangeRate }: HomeClientProps) {
     const saved = localStorage.getItem('etf_holdings');
     if (saved) {
       try {
-        setHoldings(JSON.parse(saved));
+        setHoldings({ ...defaultHoldings, ...JSON.parse(saved) });
       } catch (e) {
         console.error('Failed to parse holdings', e);
       }
